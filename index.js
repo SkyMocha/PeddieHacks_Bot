@@ -57,7 +57,7 @@ client.on ('message', (message) => {
             message.channel.send ("Role not found!")
     }
     // Creates a role specific channel for a team
-    if (message.content.toLowerCase().startsWith("!create ")) {
+    else if (message.member.permissions.has("ADMINISTRATOR") && message.content.toLowerCase().startsWith("!create ")) {
         var args = message.content.toLowerCase().split(" ").slice(1)
         // Creates the role
         message.guild.roles.create({
