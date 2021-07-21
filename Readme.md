@@ -10,8 +10,9 @@ A Discord Bot created for the Peddie Hacks 2020 Hackathon, and currently maintai
 * `!delete [team name] (ADMIN)` Allows admins to delete team rooms automatically 
 
 ## TODO
-* Help command
-* Comment & Document code for others
-* Add commands to remove roles from deleted teams
+<!-- * Help command -->
+* Better Comment & Document code for others
+<!-- * Add commands to remove roles from deleted teams -->
+* Prettify commands, embeds, etc.
 * Possible y/n verification for comamnds?
 * Possibly customize the bot further for future hackathons, or non-Peddie hackathons?
