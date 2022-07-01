@@ -48,7 +48,7 @@ function add_roles (names) {
 
 // A list of roles central to the Hackathon. Includes all non-team roles such as participants, organizers, etc.
 // Also included "new role" just for cleanliness purposes
-var invalid_roles = ["participant", "organizer", "main organizer", "sponsor", "administrator", "@everyone", "peddiehacks", "new role"]
+var invalid_roles = ["participant", "organizer", "main organizer", "sponsor", "administrator", "@everyone", "peddiehacks", "phacks", "PHacks", "new role"]
 
 // Team channels is an array of all existing team channels previously created. 
 // These only hold the parent category for the channel containing the name of the team.
@@ -102,7 +102,7 @@ client.on ('ready', () => {
     })
     
     // Sets the bots status
-    client.user.setActivity("Peddie Hacks 2021!", { type: "WATCHING" })
+    client.user.setActivity("Peddie Hacks 2022!", { type: "WATCHING" })
 
     console.log (`PEDDIE HACKS BOT RUNNING UNDER ${client.user.tag}`);
 })
@@ -115,13 +115,15 @@ client.on ('guildMemberAdd', (member) => {
 })
 
 client.on ('message', (message) => {
+    let msg = message.content.toLowerCase();
+
     // Displays all existing teams, called with !teams
-    if (message.content.toLowerCase().startsWith("!teams")) {
+    if (msg.startsWith("!teams")) {
         var roleString = "";
         // Goes through all of a servers roles and checks adds them to a string unless they are in the invalid_roles list
         message.guild.roles.cache.array().forEach (role => { 
             if (invalid_roles.indexOf(role.name.toLowerCase()) == -1)
-                roleString += `* ${role.name}\n`
+                roleString += `**>** ${role.name}\n`
         })
         roleString += "\nUse !set [team name] to add your team"
 
@@ -131,7 +133,7 @@ client.on ('message', (message) => {
     }
 
     // Gives a user a team role
-    else if (message.content.toLowerCase().startsWith("!set")) {
+    else if (msg.startsWith("!set")) {
         var name = message.content.toLowerCase().split(" ").splice(1).join(" ") // Name of the role
 
         // If the role doesnt exist, then stop
@@ -155,8 +157,8 @@ client.on ('message', (message) => {
     }
 
     // Creates role specific channels for a team
-    else if (message.member.permissions.has("ADMINISTRATOR") && message.content.toLowerCase().startsWith("!create ")) { // Create has a space to make sure it has two args
-        var args = message.content.toLowerCase().split(" ").slice(1)
+    else if (message.member.permissions.has("ADMINISTRATOR") && msg.startsWith("!create ")) { // Create has a space to make sure it has two args
+        var args = msg.split(" ").slice(1)
         // Creates the role based off the name, its a purely decorative / permissions-based role
         message.guild.roles.create({
             data: {
@@ -204,7 +206,7 @@ client.on ('message', (message) => {
     }
 
     // Deletes a teams category & the teams role if the user is an admin
-    else if (message.member.permissions.has("ADMINISTRATOR") && message.content.toLowerCase().startsWith("!delete ")) { // Create has a space to make sure it has two args
+    else if (message.member.permissions.has("ADMINISTRATOR") && msg.startsWith("!delete ")) { // Create has a space to make sure it has two args
         var name = message.content.toLowerCase().split(" ").splice(1).join(" ")
 
         let success = false;
@@ -229,6 +231,32 @@ client.on ('message', (message) => {
         if (!success)
             return message.channel.send(`"${name}" NOT FOUND`)
         return message.channel.send(`"${name}" DELETED`);
+    }
+
+    else if (message.member.permissions.has("ADMINISTRATOR") && msg.startsWith("!delete-all")) {
+
+        let count_c = 0;
+        let count_r = 0;
+
+        team_channels.forEach(channel => {
+            channel.children.array().forEach (child => {
+                child.delete()
+            })
+            channel.delete();
+            count_c += 1;
+        });
+
+        Object.entries(roles).forEach(r => {
+            let _r = r[1].array()[0];
+            if (!invalid_roles.includes(r[0])) {
+                _r.delete()
+                console.log (_r.name)
+                count_r++;
+            }
+        })
+        
+        return message.channel.send(`${count_c} CHANNELS & ${count_r} ROLES DELETED`);
+
     }
 
     // Updates all user roles if the user is an admin
