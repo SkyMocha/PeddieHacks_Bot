@@ -1,9 +1,8 @@
-/*
+/**
 
-    Skye Kychenthal
-    https://skymocha.net
+    @author Skye Kychenthal
 
-    PeddieHacks 2020 & 2021
+    @description PeddieHacks 2020 & 2021
     https://peddiehacks.peddie.org/
 
 */
@@ -15,6 +14,8 @@ var client = new Discord.Client();
 
 // Config JSON containing the bots token
 var config = require ('./config.json');
+
+var settings = require('./settings.json')
 
 // A list of all channel objects on the server.
 var channels = {
@@ -48,7 +49,20 @@ function add_roles (names) {
 
 // A list of roles central to the Hackathon. Includes all non-team roles such as participants, organizers, etc.
 // Also included "new role" just for cleanliness purposes
-var invalid_roles = ["participant", "organizer", "main organizer", "sponsor", "administrator", "@everyone", "peddiehacks", "phacks", "PHacks", "new role"]
+var invalid_roles = ["participant", 
+                    "peddiehacks 2020 & 2021", 
+                    "peddiehacks 2022", 
+                    "peddiehacks 2023",
+                    "organizer", 
+                    "main organizer", 
+                    "sponsor", 
+                    "administrator", 
+                    "@everyone", 
+                    "peddiehacks", 
+                    "phacks", 
+                    "PHacks", 
+                    "new role"
+                ]
 
 // Team channels is an array of all existing team channels previously created. 
 // These only hold the parent category for the channel containing the name of the team.
@@ -102,7 +116,7 @@ client.on ('ready', () => {
     })
     
     // Sets the bots status
-    client.user.setActivity("Peddie Hacks 2022!", { type: "WATCHING" })
+    client.user.setActivity(`Peddie Hacks ${settings.curr_year}!`, { type: "WATCHING" })
 
     console.log (`PEDDIE HACKS BOT RUNNING UNDER ${client.user.tag}`);
 })
@@ -111,11 +125,35 @@ client.on ('ready', () => {
 client.on ('guildMemberAdd', (member) => {
     // Sends to the logs channel a welcome message and gives them the participants role
     send_channel('logs', `Welcome, ${member}, please read ${channels["rules"].array()[0]}. \nThen, change your nickame to your first name plus the first letter of your last name.\nFor the most up to date info, check out https://peddiehacks.peddie.org/`);
-    member.roles.add(roles["participant"].array()[0]);
+    member.roles.add(roles[`peddiehacks ${settings.curr_year}`].array()[0]);
 })
 
 client.on ('message', (message) => {
+
     let msg = message.content.toLowerCase();
+
+    if ((msg.includes('https://') || msg.includes('http://')) && !message.member.permissions.has('ADMINISTRATOR')) {
+
+        message.guild.fetchInvites().then(invites => {
+           
+            let count = 0;
+
+            invites.array().forEach(invite => {
+
+                if (!msg.includes(invite.code.toLowerCase())) {
+                    count++;
+                }
+
+            })
+
+            if (invites.array().length == count)
+                message.channel.send ('Please do not advertise on this server').then ( () => {
+                    message.delete();
+                })    
+
+        })
+        
+    }
 
     // Displays all existing teams, called with !teams
     if (msg.startsWith("!teams")) {
